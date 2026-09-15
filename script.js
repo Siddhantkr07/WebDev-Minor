@@ -1,238 +1,244 @@
-﻿// ===========================
-//   STUDENTHUB — CRUD APP
-// ===========================
+﻿// ============================
+//  STUDENTHUB — CRUD APP v3
+// ============================
+const KEY = "studentHub_v3";
 
-const STORAGE_KEY = "studentHub_v2";
-
-// Avatar colors per gender
-const AVATAR_COLORS = {
-  Male:   ["#6366f1","#4338ca"],
-  Female: ["#ec4899","#db2777"],
-  Other:  ["#8b5cf6","#7c3aed"],
-  "":     ["#64748b","#475569"]
+const GRAD = {
+  Male:   ["#4f46e5","#7c3aed"],
+  Female: ["#db2777","#ec4899"],
+  Other:  ["#7c3aed","#a855f7"],
+  "":     ["#334155","#475569"]
 };
 
-let students  = [];
-let editingId = null;
-let toastTimer;
+let students = [];
+let _timer;
 
-// ---- Boot ----
+// ---- BOOT ----
 document.addEventListener("DOMContentLoaded", () => {
-  loadStudents();
-  renderTable(students);
-  updateStats();
-  updateFilterOptions();
+  try { students = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { students = []; }
+  render(students); stats(); filters();
 });
 
 // ============================================================
-//  CRUD
+// SUBMIT (Create / Update)
 // ============================================================
-
-function handleFormSubmit(e) {
+function handleSubmit(e) {
   e.preventDefault();
-  const id      = document.getElementById("studentId").value;
-  const first   = cap(document.getElementById("firstName").value.trim());
-  const last    = cap(document.getElementById("lastName").value.trim());
-  const email   = document.getElementById("email").value.trim().toLowerCase();
-  const phone   = document.getElementById("phone").value.trim();
-  const age     = document.getElementById("age").value.trim();
-  const gender  = document.getElementById("gender").value;
-  const course  = document.getElementById("course").value;
-  const year    = document.getElementById("year").value;
-  const address = document.getElementById("address").value.trim();
+  const id  = v("sId");
+  const fn  = cap(v("fName")), ln = cap(v("lName"));
+  const em  = v("email").toLowerCase();
+  const ph  = v("phone"), ag = v("age");
+  const gn  = v("gender"), co = v("course"), yr = v("year"), ad = v("address");
 
-  // Duplicate email check
-  if (students.find(s => s.email === email && s.id !== id)) {
-    showToast("Email already exists!", "error"); return;
+  if (students.find(s => s.email === em && s.id !== id)) {
+    toast("Email already in use!", "err"); return;
   }
 
   if (id) {
-    const idx = students.findIndex(s => s.id === id);
-    students[idx] = { ...students[idx], firstName: first, lastName: last, email, phone, age, gender, course, year, address, updatedAt: new Date().toISOString() };
-    showToast("Student updated successfully!");
+    const i = students.findIndex(s => s.id === id);
+    students[i] = { ...students[i], fn, ln, em, ph, ag, gn, co, yr, ad, up: now() };
+    toast("Student updated!");
   } else {
-    students.unshift({ id: uid(), firstName: first, lastName: last, email, phone, age, gender, course, year, address, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-    showToast("Student added successfully!");
+    students.unshift({ id: uid(), fn, ln, em, ph, ag, gn, co, yr, ad, cr: now(), up: now() });
+    toast("Student added!");
   }
-
-  saveStudents();
-  renderTable(getFiltered());
-  updateStats();
-  updateFilterOptions();
-  clearForm();
+  save(); render(filtered()); stats(); filters(); clearForm();
 }
 
-function renderTable(data) {
-  const tbody   = document.getElementById("studentTableBody");
-  const empty   = document.getElementById("emptyState");
-  const wrapper = document.getElementById("tableWrapper");
-  const countEl = document.getElementById("recordCount");
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function render(data) {
+  const tb  = document.getElementById("tBody");
+  const emp = document.getElementById("emptyEl");
+  const tw  = document.getElementById("tblWrap");
+  const rc  = document.getElementById("recCount");
 
-  tbody.innerHTML = "";
-  countEl.textContent = `${data.length} record${data.length !== 1 ? "s" : ""} found`;
+  tb.innerHTML = "";
+  rc.textContent = `${data.length} record${data.length !== 1 ? "s" : ""}`;
 
-  if (data.length === 0) { empty.style.display = "block"; wrapper.style.display = "none"; return; }
-  empty.style.display = "none"; wrapper.style.display = "block";
+  if (!data.length) { emp.style.display = "flex"; tw.style.display = "none"; return; }
+  emp.style.display = "none"; tw.style.display = "block";
 
   data.forEach((s, i) => {
-    const initials = (s.firstName[0] || "") + (s.lastName[0] || "");
-    const colors   = AVATAR_COLORS[s.gender] || AVATAR_COLORS[""];
-    const gClass   = s.gender === "Male" ? "gender-male" : s.gender === "Female" ? "gender-female" : "gender-other";
-    const tr       = document.createElement("tr");
-    tr.setAttribute("data-id", s.id);
+    const [c1, c2] = GRAD[s.gn] || GRAD[""];
+    const initials = ((s.fn[0] || "") + (s.ln[0] || "")).toUpperCase();
+    const gBadge   = s.gn === "Male" ? "bm" : s.gn === "Female" ? "bf" : "bo";
+    const tr = document.createElement("tr");
+    tr.style.animationDelay = (i * 35) + "ms";
     tr.innerHTML = `
-      <td><div class="serial-num">${i + 1}</div></td>
+      <td><div class="snum">${i + 1}</div></td>
       <td>
-        <div class="name-cell">
-          <div class="student-avatar" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${esc(initials.toUpperCase())}</div>
-          <div class="name-info">
-            <div class="full-name">${esc(s.firstName)} ${esc(s.lastName)}</div>
-            ${s.address ? `<div class="address">${esc(s.address)}</div>` : ""}
+        <div class="stu-cell">
+          <div class="avatar" style="background:linear-gradient(135deg,${c1},${c2})">${x(initials)}</div>
+          <div class="stu-info">
+            <div class="sname">${x(s.fn)} ${x(s.ln)}</div>
+            ${s.ad ? `<div class="saddr">${x(s.ad)}</div>` : ""}
           </div>
         </div>
       </td>
       <td>
-        <div class="email-text">${esc(s.email)}</div>
-        <div class="phone-text" style="margin-top:2px">${esc(s.phone)}</div>
+        <div class="contact-cell">
+          <div class="mail">${x(s.em)}</div>
+          <div class="ph">${x(s.ph)}</div>
+        </div>
       </td>
-      <td><span class="year-badge" style="background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.2)">${esc(s.age)}</span></td>
-      <td><span class="gender-badge ${gClass}">${esc(s.gender)}</span></td>
-      <td><span class="course-badge" title="${esc(s.course)}">${esc(s.course)}</span></td>
-      <td><span class="year-badge">${esc(s.year)}</span></td>
+      <td><span class="badge ba">${x(s.ag)}</span></td>
+      <td><span class="badge ${gBadge}">${x(s.gn)}</span></td>
+      <td><span class="badge bc" title="${x(s.co)}">${x(s.co)}</span></td>
+      <td><span class="badge by">${x(s.yr)}</span></td>
       <td>
-        <div class="actions-cell">
-          <button class="btn btn-warning btn-sm" onclick="editStudent('${s.id}')"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${s.id}')"><i class="fas fa-trash"></i></button>
+        <div class="acts">
+          <button class="btn btn-warn btn-sm" onclick="edit('${s.id}')"><i class="fas fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="del('${s.id}')"><i class="fas fa-trash"></i></button>
         </div>
       </td>`;
-    tbody.appendChild(tr);
+    tb.appendChild(tr);
   });
 }
 
-function editStudent(id) {
-  const s = students.find(s => s.id === id);
-  if (!s) return;
-  editingId = id;
-  document.getElementById("studentId").value  = s.id;
-  document.getElementById("firstName").value  = s.firstName;
-  document.getElementById("lastName").value   = s.lastName;
-  document.getElementById("email").value      = s.email;
-  document.getElementById("phone").value      = s.phone;
-  document.getElementById("age").value        = s.age;
-  document.getElementById("gender").value     = s.gender;
-  document.getElementById("course").value     = s.course;
-  document.getElementById("year").value       = s.year;
-  document.getElementById("address").value    = s.address || "";
+// ============================================================
+// EDIT
+// ============================================================
+function edit(id) {
+  const s = students.find(s => s.id === id); if (!s) return;
+  set("sId", s.id); set("fName", s.fn); set("lName", s.ln);
+  set("email", s.em); set("phone", s.ph); set("age", s.ag);
+  set("gender", s.gn); set("course", s.co); set("year", s.yr); set("address", s.ad || "");
 
-  document.getElementById("formTitle").innerHTML  = 'Edit Student <span id="formSubtitle">Update the details below</span>';
-  document.getElementById("formIconEl").innerHTML = '<i class="fas fa-user-edit"></i>';
-  document.getElementById("formIconEl").style.background = "linear-gradient(135deg,#f59e0b,#d97706)";
-  document.getElementById("submitBtn").innerHTML  = '<i class="fas fa-save"></i> Update Student';
-  document.getElementById("submitBtn").className  = "btn btn-success btn-full";
+  document.getElementById("fTitle").textContent = "Edit Student";
+  document.getElementById("fSub").textContent   = "Update the details below";
+  const ico = document.getElementById("fIcon");
+  ico.innerHTML = '<i class="fas fa-user-edit"></i>';
+  ico.style.background = "linear-gradient(135deg,#d97706,#f59e0b)";
+  ico.style.boxShadow  = "0 4px 14px rgba(245,158,11,.4)";
+  const btn = document.getElementById("sBtn");
+  btn.innerHTML = '<i class="fas fa-save"></i> Update Student';
+  btn.className = "btn btn-success btn-full";
 
-  document.querySelector(".form-section").scrollIntoView({ behavior: "smooth" });
+  document.querySelector(".form-card").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function confirmDeleteStudent(id) {
+// ============================================================
+// DELETE
+// ============================================================
+function del(id) {
   const s = students.find(s => s.id === id);
-  document.getElementById("modalMessage").textContent = `Delete "${s.firstName} ${s.lastName}"? This cannot be undone.`;
+  document.getElementById("modalTxt").textContent = `Delete "${s.fn} ${s.ln}"? This action cannot be undone.`;
   openModal();
-  document.getElementById("confirmDeleteBtn").onclick = () => {
+  document.getElementById("modalOk").onclick = () => {
     students = students.filter(s => s.id !== id);
-    afterMutation("Student deleted.");
+    afterMut("Student deleted.");
   };
 }
 
-function deleteAllStudents() {
-  if (!students.length) { showToast("Nothing to delete!", "warning"); return; }
-  document.getElementById("modalMessage").textContent = `Delete all ${students.length} student(s)? This cannot be undone.`;
+function deleteAll() {
+  if (!students.length) { toast("Nothing to delete!", "warn"); return; }
+  document.getElementById("modalTxt").textContent = `Delete all ${students.length} student(s)? This cannot be undone.`;
   openModal();
-  document.getElementById("confirmDeleteBtn").onclick = () => {
-    students = [];
-    afterMutation("All students deleted.");
-  };
+  document.getElementById("modalOk").onclick = () => { students = []; afterMut("All records cleared."); };
 }
 
-function afterMutation(msg) {
-  saveStudents(); renderTable(getFiltered()); updateStats(); updateFilterOptions(); closeModal(); showToast(msg);
+function afterMut(msg) {
+  save(); render(filtered()); stats(); filters(); closeModal(); toast(msg);
 }
 
 // ============================================================
-//  SEARCH & FILTER
+// SEARCH / FILTER
 // ============================================================
-function getFiltered() {
-  const q = document.getElementById("searchInput").value.toLowerCase().trim();
-  const c = document.getElementById("filterCourse").value;
+function filtered() {
+  const q  = v("searchQ").toLowerCase().trim();
+  const co = v("fCourse");
   return students.filter(s => {
-    const match = !q || `${s.firstName} ${s.lastName} ${s.email} ${s.phone} ${s.course} ${s.year} ${s.gender}`.toLowerCase().includes(q);
-    return match && (!c || s.course === c);
+    const m = !q || `${s.fn} ${s.ln} ${s.em} ${s.ph} ${s.co} ${s.yr} ${s.gn}`.toLowerCase().includes(q);
+    return m && (!co || s.co === co);
   });
 }
-function searchStudents() { renderTable(getFiltered()); }
-function filterStudents()  { renderTable(getFiltered()); }
+function doSearch() { render(filtered()); }
+function doFilter()  { render(filtered()); }
 
 // ============================================================
-//  STATS
+// STATS
 // ============================================================
-function updateStats() {
-  document.getElementById("totalStudents").textContent = students.length;
-  document.getElementById("maleCount").textContent     = students.filter(s => s.gender === "Male").length;
-  document.getElementById("femaleCount").textContent   = students.filter(s => s.gender === "Female").length;
-  document.getElementById("courseCount").textContent   = new Set(students.map(s => s.course)).size;
+function stats() {
+  animCount("totalStudents", students.length);
+  animCount("maleCount",     students.filter(s => s.gn === "Male").length);
+  animCount("femaleCount",   students.filter(s => s.gn === "Female").length);
+  animCount("courseCount",   new Set(students.map(s => s.co)).size);
 }
 
-function updateFilterOptions() {
-  const sel     = document.getElementById("filterCourse");
-  const current = sel.value;
-  const courses = [...new Set(students.map(s => s.course))].sort();
+function animCount(id, target) {
+  const el = document.getElementById(id);
+  const from = parseInt(el.textContent) || 0;
+  if (from === target) return;
+  const steps = 20, inc = (target - from) / steps;
+  let cur = from, step = 0;
+  const t = setInterval(() => {
+    step++; cur += inc;
+    el.textContent = Math.round(step >= steps ? target : cur);
+    if (step >= steps) clearInterval(t);
+  }, 25);
+}
+
+// ============================================================
+// FILTER OPTIONS
+// ============================================================
+function filters() {
+  const sel = document.getElementById("fCourse");
+  const cur = sel.value;
+  const cs  = [...new Set(students.map(s => s.co))].sort();
   sel.innerHTML = '<option value="">All Courses</option>' +
-    courses.map(c => `<option value="${c}"${c === current ? " selected" : ""}>${c}</option>`).join("");
+    cs.map(c => `<option value="${c}"${c===cur?" selected":""}>${c}</option>`).join("");
 }
 
 // ============================================================
-//  FORM HELPERS
+// FORM RESET
 // ============================================================
 function clearForm() {
-  document.getElementById("studentForm").reset();
-  document.getElementById("studentId").value  = "";
-  editingId = null;
-  document.getElementById("formTitle").innerHTML  = 'Add Student <span id="formSubtitle">Fill in the details below</span>';
-  document.getElementById("formIconEl").innerHTML = '<i class="fas fa-user-plus"></i>';
-  document.getElementById("formIconEl").style.background = "linear-gradient(135deg,#6366f1,#8b5cf6)";
-  document.getElementById("submitBtn").innerHTML  = '<i class="fas fa-plus-circle"></i> Add Student';
-  document.getElementById("submitBtn").className  = "btn btn-primary btn-full";
+  document.getElementById("sForm").reset();
+  set("sId", "");
+  document.getElementById("fTitle").textContent = "Add Student";
+  document.getElementById("fSub").textContent   = "Fill in the details below";
+  const ico = document.getElementById("fIcon");
+  ico.innerHTML = '<i class="fas fa-user-plus"></i>';
+  ico.style.background = "linear-gradient(135deg,#4f46e5,#a855f7)";
+  ico.style.boxShadow  = "0 4px 14px rgba(99,102,241,.4)";
+  const btn = document.getElementById("sBtn");
+  btn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Student';
+  btn.className = "btn btn-primary btn-full";
 }
 
 // ============================================================
-//  MODAL
+// MODAL
 // ============================================================
-function openModal()  { document.getElementById("modalOverlay").classList.add("active"); }
-function closeModal() { document.getElementById("modalOverlay").classList.remove("active"); }
-document.getElementById("modalOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) closeModal(); });
+function openModal()  { document.getElementById("modalBg").classList.add("on"); }
+function closeModal() { document.getElementById("modalBg").classList.remove("on"); }
+document.getElementById("modalBg").addEventListener("click", e => { if (e.target === e.currentTarget) closeModal(); });
 
 // ============================================================
-//  TOAST
+// TOAST
 // ============================================================
-function showToast(msg, type = "success") {
-  const t = document.getElementById("toast");
-  const icon = { success: "fa-check-circle", error: "fa-times-circle", warning: "fa-exclamation-circle" };
-  t.className = `toast${type !== "success" ? " " + type : ""}`;
-  document.getElementById("toastIcon").className = `fas ${icon[type] || icon.success}`;
-  document.getElementById("toastMsg").textContent = msg;
-  t.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+function toast(msg, type = "ok") {
+  const el  = document.getElementById("toastEl");
+  const ico = document.getElementById("toastIco");
+  const txt = document.getElementById("toastTxt");
+  const MAP = { ok: ["t-ok","fa-check-circle"], err: ["t-err","fa-times-circle"], warn: ["t-warn","fa-exclamation-circle"] };
+  const [cls, icon] = MAP[type] || MAP.ok;
+  el.className = `toast ${cls}`;
+  ico.className = `fas ${icon}`;
+  txt.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(_timer);
+  _timer = setTimeout(() => el.classList.remove("show"), 3400);
 }
 
 // ============================================================
-//  LOCALSTORAGE
+// UTILS
 // ============================================================
-function saveStudents() { localStorage.setItem(STORAGE_KEY, JSON.stringify(students)); }
-function loadStudents() { try { students = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { students = []; } }
-
-// ============================================================
-//  UTILS
-// ============================================================
-function uid()     { return "_" + Math.random().toString(36).slice(2, 9) + Date.now().toString(36); }
-function cap(str)  { return str ? str.charAt(0).toUpperCase() + str.slice(1) : str; }
-function esc(str)  { const d = document.createElement("div"); d.appendChild(document.createTextNode(String(str ?? ""))); return d.innerHTML; }
+function save()   { localStorage.setItem(KEY, JSON.stringify(students)); }
+function uid()    { return "_" + Math.random().toString(36).slice(2,9) + Date.now().toString(36); }
+function now()    { return new Date().toISOString(); }
+function cap(s)   { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function v(id)    { return (document.getElementById(id).value || "").trim(); }
+function set(id,val){ document.getElementById(id).value = val; }
+function x(str)   { const d = document.createElement("div"); d.appendChild(document.createTextNode(String(str??"")));return d.innerHTML; }

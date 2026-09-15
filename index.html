@@ -9,233 +9,244 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-content">
-      <div class="logo">
-        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
-        <div class="logo-text">Student<span>Hub</span></div>
-      </div>
-      <div class="header-badge">Minor Project &mdash; CRUD App</div>
+<!-- ANIMATED BG -->
+<div class="bg-blobs">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      <span class="logo-name">StudentHub</span>
     </div>
-  </header>
-
-  <main class="container">
-
-    <!-- PAGE TITLE -->
-    <div class="page-title">
-      <h1>Student Management System</h1>
-      <p>Create, Read, Update &amp; Delete student records — all data persisted locally</p>
+    <div class="nav-pills">
+      <span class="nav-pill nav-pill-1"><i class="fas fa-database"></i> CRUD App</span>
+      <span class="nav-pill nav-pill-2"><i class="fas fa-bolt"></i> Live Data</span>
     </div>
+  </div>
+</header>
 
-    <!-- STATS -->
-    <section class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-info">
-          <span class="stat-number" id="totalStudents">0</span>
-          <span class="stat-label">Total Students</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-mars"></i></div>
-        <div class="stat-info">
-          <span class="stat-number" id="maleCount">0</span>
-          <span class="stat-label">Male</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-venus"></i></div>
-        <div class="stat-info">
-          <span class="stat-number" id="femaleCount">0</span>
-          <span class="stat-label">Female</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-        <div class="stat-info">
-          <span class="stat-number" id="courseCount">0</span>
-          <span class="stat-label">Courses</span>
-        </div>
-      </div>
-    </section>
+<main class="main">
 
-    <!-- LAYOUT GRID: Form | Table -->
-    <div class="layout-grid">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label"><i class="fas fa-star"></i> Web Development Minor Project</div>
+    <h1>Student Management<br/>System</h1>
+    <p>A full CRUD application to Create, Read, Update &amp; Delete student records with real-time local persistence.</p>
+  </div>
 
-      <!-- FORM -->
-      <section class="form-section">
-        <div class="form-header">
-          <div class="form-header-title">
-            <div class="form-header-icon" id="formIconEl"><i class="fas fa-user-plus"></i></div>
-            <h2 id="formTitle">Add Student <span id="formSubtitle">Fill in the details below</span></h2>
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-data">
+        <span class="stat-num" id="totalStudents">0</span>
+        <span class="stat-label">Total Students</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-mars"></i></div>
+      <div class="stat-data">
+        <span class="stat-num" id="maleCount">0</span>
+        <span class="stat-label">Male</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-venus"></i></div>
+      <div class="stat-data">
+        <span class="stat-num" id="femaleCount">0</span>
+        <span class="stat-label">Female</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+      <div class="stat-data">
+        <span class="stat-num" id="courseCount">0</span>
+        <span class="stat-label">Courses</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- FORM -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <div class="form-head-left">
+          <div class="form-head-icon" id="fIcon"><i class="fas fa-user-plus"></i></div>
+          <div class="form-head-text">
+            <h3 id="fTitle">Add Student</h3>
+            <p id="fSub">Fill in the details below</p>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="clearForm()">
-            <i class="fas fa-times"></i>
+        </div>
+        <button class="btn btn-ghost btn-icon" onclick="clearForm()" title="Reset form">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="sForm" onsubmit="handleSubmit(event)">
+        <input type="hidden" id="sId"/>
+        <div class="form-body">
+
+          <div class="frow">
+            <div class="fg">
+              <label><i class="fas fa-user"></i> First Name *</label>
+              <input type="text" id="fName" placeholder="John" required/>
+            </div>
+            <div class="fg">
+              <label><i class="fas fa-user"></i> Last Name *</label>
+              <input type="text" id="lName" placeholder="Doe" required/>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label><i class="fas fa-envelope"></i> Email *</label>
+            <input type="email" id="email" placeholder="john@example.com" required/>
+          </div>
+
+          <div class="frow">
+            <div class="fg">
+              <label><i class="fas fa-phone"></i> Phone *</label>
+              <input type="tel" id="phone" placeholder="+91 9876543210" required/>
+            </div>
+            <div class="fg">
+              <label><i class="fas fa-hashtag"></i> Age *</label>
+              <input type="number" id="age" placeholder="20" min="15" max="100" required/>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label><i class="fas fa-venus-mars"></i> Gender *</label>
+            <select id="gender" required>
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label><i class="fas fa-book"></i> Course *</label>
+            <select id="course" required>
+              <option value="">Select course</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Civil">Civil</option>
+              <option value="Business Administration">Business Administration</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Artificial Intelligence">Artificial Intelligence</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label><i class="fas fa-layer-group"></i> Year *</label>
+            <select id="year" required>
+              <option value="">Select year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label><i class="fas fa-map-marker-alt"></i> Address <span style="color:#334155;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <textarea id="address" placeholder="City, State..."></textarea>
+          </div>
+
+        </div>
+        <div class="form-foot">
+          <button type="submit" class="btn btn-primary btn-full" id="sBtn">
+            <i class="fas fa-plus-circle"></i> Add Student
+          </button>
+          <button type="button" class="btn btn-ghost btn-icon" onclick="clearForm()" title="Reset">
+            <i class="fas fa-undo"></i>
           </button>
         </div>
-
-        <form id="studentForm" onsubmit="handleFormSubmit(event)">
-          <input type="hidden" id="studentId"/>
-          <div class="form-body">
-
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="fas fa-user"></i> First Name *</label>
-                <input type="text" id="firstName" placeholder="John" required/>
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-user"></i> Last Name *</label>
-                <input type="text" id="lastName" placeholder="Doe" required/>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label><i class="fas fa-envelope"></i> Email Address *</label>
-              <input type="email" id="email" placeholder="john@example.com" required/>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="fas fa-phone"></i> Phone *</label>
-                <input type="tel" id="phone" placeholder="+91 9876543210" required/>
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-hashtag"></i> Age *</label>
-                <input type="number" id="age" placeholder="20" min="15" max="100" required/>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label><i class="fas fa-venus-mars"></i> Gender *</label>
-              <select id="gender" required>
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label><i class="fas fa-book"></i> Course *</label>
-              <select id="course" required>
-                <option value="">Select course</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Information Technology">Information Technology</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Mechanical">Mechanical</option>
-                <option value="Civil">Civil</option>
-                <option value="Business Administration">Business Administration</option>
-                <option value="Data Science">Data Science</option>
-                <option value="Artificial Intelligence">Artificial Intelligence</option>
-              </select>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group" style="grid-column:1/-1">
-                <label><i class="fas fa-layer-group"></i> Year *</label>
-                <select id="year" required>
-                  <option value="">Select year</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label><i class="fas fa-map-marker-alt"></i> Address <span style="color:#475569;font-weight:400">(optional)</span></label>
-              <textarea id="address" placeholder="City, State..."></textarea>
-            </div>
-
-          </div>
-
-          <div class="form-footer">
-            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
-              <i class="fas fa-plus-circle"></i> Add Student
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="clearForm()">
-              <i class="fas fa-undo"></i>
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <!-- TABLE -->
-      <section class="table-section">
-        <div class="table-header">
-          <div class="table-header-left">
-            <div class="table-header-icon"><i class="fas fa-table"></i></div>
-            <h2>Student Records <span id="recordCount">0 records found</span></h2>
-          </div>
-          <div class="table-controls">
-            <div class="search-box">
-              <i class="fas fa-search"></i>
-              <input type="text" id="searchInput" placeholder="Search..." oninput="searchStudents()"/>
-            </div>
-            <select id="filterCourse" onchange="filterStudents()" class="filter-select">
-              <option value="">All Courses</option>
-            </select>
-            <button class="btn btn-danger btn-sm" onclick="deleteAllStudents()">
-              <i class="fas fa-trash-alt"></i> Clear All
-            </button>
-          </div>
-        </div>
-
-        <!-- EMPTY STATE -->
-        <div class="empty-state" id="emptyState">
-          <div class="empty-illustration"><i class="fas fa-user-graduate"></i></div>
-          <h3>No Students Yet</h3>
-          <p>Add your first student using the form on the left. All data is saved automatically.</p>
-        </div>
-
-        <!-- TABLE -->
-        <div class="table-wrapper" id="tableWrapper" style="display:none;">
-          <table id="studentTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student</th>
-                <th>Contact</th>
-                <th>Age</th>
-                <th>Gender</th>
-                <th>Course</th>
-                <th>Year</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="studentTableBody"></tbody>
-          </table>
-        </div>
-      </section>
-
+      </form>
     </div>
-  </main>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <i id="toastIcon" class="fas fa-check-circle"></i>
-    <span id="toastMsg"></span>
-  </div>
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-top-left">
+          <div class="table-top-icon"><i class="fas fa-table-list"></i></div>
+          <div class="table-top-title">
+            <h3>Student Records</h3>
+            <p id="recCount">0 records</p>
+          </div>
+        </div>
+        <div class="table-controls">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchQ" placeholder="Search..." oninput="doSearch()"/>
+          </div>
+          <select id="fCourse" class="filter-sel" onchange="doFilter()">
+            <option value="">All Courses</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="deleteAll()">
+            <i class="fas fa-trash-alt"></i> Clear All
+          </button>
+        </div>
+      </div>
 
-  <!-- MODAL -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-      <h3>Confirm Delete</h3>
-      <p id="modalMessage">Are you sure you want to delete this student?</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
-        <button class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Delete</button>
+      <!-- empty -->
+      <div class="empty" id="emptyEl">
+        <div class="empty-ring"><i class="fas fa-user-graduate"></i></div>
+        <h3>No Students Yet</h3>
+        <p>Use the form to add your first student. All data is saved automatically in your browser.</p>
+      </div>
+
+      <!-- table -->
+      <div class="tbl-wrap" id="tblWrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Contact</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Course</th>
+              <th>Year</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tBody"></tbody>
+        </table>
       </div>
     </div>
+
   </div>
+</main>
 
-  <footer class="footer">
-    <p>Web Development Minor Project &mdash; CRUD Application &nbsp;|&nbsp; Built with HTML, CSS &amp; JavaScript &nbsp;|&nbsp; <strong>StudentHub &copy; 2024</strong></p>
-  </footer>
+<!-- TOAST -->
+<div class="toast t-ok" id="toastEl">
+  <i id="toastIco" class="fas fa-check-circle"></i>
+  <span id="toastTxt"></span>
+</div>
 
-  <script src="script.js"></script>
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal-box">
+    <div class="modal-ico"><i class="fas fa-exclamation-triangle"></i></div>
+    <h3>Confirm Delete</h3>
+    <p id="modalTxt">Are you sure?</p>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+      <button class="btn btn-danger" id="modalOk"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
